@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Gemini AI Code Review Action
-        uses: sarfraznawaz2005/ai-code-review@1.0.8
+        uses: sarfraznawaz2005/ai-code-review-action@main
         with:
           github-token: ${{ secrets.GIT_TOKEN }}
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}

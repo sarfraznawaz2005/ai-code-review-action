@@ -1,5 +1,5 @@
 {
-  "name": "gemini-ai-code-review-tool",
+  "name": "ai-code-review-action",
   "version": "1.0.0",
   "description": "Gemini AI Code Review Tool",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sarfraznawaz2005/ai-code-review.git"
+    "url": "git+https://github.com/sarfraznawaz2005/ai-code-review-action.git"
   },
   "keywords": [
     "code",
@@ -20,9 +20,9 @@
   "author": "Sarfraz Ahmed",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sarfraznawaz2005/ai-code-review/issues"
+    "url": "https://github.com/sarfraznawaz2005/ai-code-review-action/issues"
   },
-  "homepage": "https://github.com/sarfraznawaz2005/ai-code-review#readme",
+  "homepage": "https://github.com/sarfraznawaz2005/ai-code-review-action#readme",
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/github": "^5.1.1",
