@@ -1,4 +1,4 @@
-# Gemini AI Code Review Tool
+# Gemini AI Code Review Action
 
 This action takes as input `GIT_TOKEN` and `GEMINI_API_KEY` and watches pull/push requests and sends the git diff to AI and comments (in case of PR only) on the PR as well as sending details in email if configured.
 
