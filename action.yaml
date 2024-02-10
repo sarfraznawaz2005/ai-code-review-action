@@ -1,0 +1,19 @@
+name: "Gemini AI Code Review Action"
+description: "Get an explanation of code changes in a pull/push requests and comment on it"
+inputs:
+  github-token:
+    description: "GitHub Token"
+    required: true
+  gemini-api-key:
+    description: "Gemini API Key"
+    required: true
+  model:
+    description: "Gemini Model"
+    required: false
+    default: "gemini-pro"
+runs:
+  using: "node20"
+  main: "src/index.js"
+branding:
+  icon: 'code'
+  color: 'green'
