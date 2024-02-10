@@ -38,14 +38,17 @@ async function getPushDiff(commits, octokit, repo) {
 async function getReview(diff, geminiApiKey, model) {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
 
+    // Always start your suggestions with file name(s) including line numbers with each suggestion.
+
     const prompt = `
-    Act as a code reviewer with deep knowledge of software development. Always start your suggestions with file name(s) 
-    including line numbers with each suggestion. 
+    You are developing an automated code review tool for the Engineering department of a technology/software company. 
+    Given a code snippet or file, analyze the code's quality and provide suggestions for improvement. Identify common 
+    issues such as code smells, anti-patterns, potential bugs, performance bottlenecks, security vulnerabilities, 
+    inefficient database queries, frequent or unnecessary I/O operations, or resource-intensive loops, complex or 
+    convoluted code structures, excessive code coupling, lack of modularity, poor separation of concerns, architectural 
+    inconsistencies, or dependencies that hinder unit testing, or code that is hard to understand and maintain. 
     
-    Rules you must follow:
-    - Only consider code files not images or videos for example.
-    - Don't suggest about indentation or readability or spacing issues or coding style.
-    - Don't suggest about things like adding/removing a comment or "descriptive names".
+    Offer actionable recommendations to address these issues and improve the overall quality of the code.
     
     Here is code: 
     ${diff}
