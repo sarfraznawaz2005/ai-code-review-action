@@ -191,8 +191,6 @@ async function run() {
             await sendEmail(subject, body, emailConfig);
         }
 
-        core.setOutput("success", true);
-
     } catch (error) {
         core.setFailed(error.message);
     }
