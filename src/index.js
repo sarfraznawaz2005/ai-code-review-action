@@ -40,8 +40,8 @@ async function getExplanation(diff, geminiApiKey, model) {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
 
     const prompt = `
-    Act as a code reviewer with deep knowledge of software development. Always start your suggestions with file name(s). 
-    Provide suggestions on how to make code more readable, maintainable and secure including line numbers with each suggestion. 
+    Act as a code reviewer with deep knowledge of software development. Always start your suggestions with file name(s) 
+    including line numbers with each suggestion. 
     
     Rules you must follow:
     - Only consider code files not images or videos for example.
