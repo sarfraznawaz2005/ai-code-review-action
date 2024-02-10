@@ -11,7 +11,7 @@ Usage:
 3 - Finally, create a file named `review-action.yml`  inside `.github/workflows` with the following contents:
 
 ```
-name: ChatGPT PR Code Review
+name: Gemini AI Code Review Action
 
 on:
   push:
