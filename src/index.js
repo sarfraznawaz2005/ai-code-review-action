@@ -44,7 +44,7 @@ async function getReview(diff, geminiApiKey, model) {
     
     Rules you must follow:
     - Only consider code files not images or videos for example.
-    - Don't suggest about indentation and readability or spacing issues.
+    - Don't suggest about indentation or readability or spacing issues or coding style.
     - Don't suggest about things like adding/removing a comment or "descriptive names".
     
     Here is code: 
