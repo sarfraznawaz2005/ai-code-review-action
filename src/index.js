@@ -7,7 +7,6 @@ const showdown = require('showdown');
 const converter = new showdown.Converter({
     omitExtraWLInCodeBlocks: true,
     simplifiedAutoLink: true,
-    strikethrough: true
 });
 
 async function getPrDiff(prNumber, octokit, repo) {
@@ -36,7 +35,7 @@ async function getPushDiff(commits, octokit, repo) {
     return diffs;
 }
 
-async function getExplanation(diff, geminiApiKey, model) {
+async function getReview(diff, geminiApiKey, model) {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
 
     const prompt = `
@@ -147,7 +146,7 @@ async function run() {
         const emailConfig = {
             host: core.getInput('email-host'),
             port: core.getInput('email-port'),
-            secure: core.getInput('email-secure') === 'true',
+            secure: core.getInput('email-secure') == 'true',
             user: core.getInput('email-user'),
             pass: core.getInput('email-pass'),
             from: core.getInput('email-from'),
@@ -161,7 +160,7 @@ async function run() {
         if (github.context.eventName === 'pull_request') {
             const prNumber = github.context.payload.pull_request.number;
             const diff = await getPrDiff(prNumber, octokit, repo);
-            const explanation = await getExplanation(diff, geminiApiKey, model);
+            const explanation = await getReview(diff, geminiApiKey, model);
 
             await commentOnPr(prNumber, explanation, octokit, repo);
 
@@ -177,15 +176,16 @@ async function run() {
             }
 
             const diff = await getPushDiff(commits, octokit, repo);
-            const explanation = await getExplanation(diff, geminiApiKey, model);
+            const explanation = await getReview(diff, geminiApiKey, model);
 
             subject = `Code Review: Push Event in ${repo.repo.toUpperCase()}`;
-            body = explanation;
+            body = explanation.trim();
+
             console.log(`explanation`);
             console.log(explanation);
         }
 
-        if (body) {
+        if (body && body !== 'Error or no response!') {
             body = converter.makeHtml(body);
 
             await sendEmail(subject, body, emailConfig);
