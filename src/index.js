@@ -159,19 +159,23 @@ async function run() {
 
         let subject = '';
         let body = '';
+        let userName = '';
 
         if (github.context.eventName === 'pull_request') {
             const prNumber = github.context.payload.pull_request.number;
             const diff = await getPrDiff(prNumber, octokit, repo);
             const explanation = await getReview(diff, geminiApiKey, model);
+            userName = github.context.payload.pull_request.user.login;
 
             await commentOnPr(prNumber, explanation, octokit, repo);
 
-            subject = `Code Review: Pull Request #${prNumber} in ${repo.repo.toUpperCase()}`;
+            subject = `Code Review: Pull Request #${prNumber} in ${repo.repo.toUpperCase()} By ${userName}`;
             body = explanation;
 
         } else if (github.context.eventName === 'push') {
             const commits = github.context.payload.commits;
+            userName = github.context.payload.pusher.name;
+            userName = userName || github.context.payload.pull_request.user.login;
 
             if (!commits || commits.length === 0) {
                 console.log('No commits found in push event.');
@@ -181,7 +185,7 @@ async function run() {
             const diff = await getPushDiff(commits, octokit, repo);
             const explanation = await getReview(diff, geminiApiKey, model);
 
-            subject = `Code Review: Push Event in ${repo.repo.toUpperCase()}`;
+            subject = `Code Review: Push Event in ${repo.repo.toUpperCase()} By ${userName}`;
             body = explanation.trim();
 
             console.log(`explanation`);
