@@ -48,8 +48,8 @@ async function getReview(diff, geminiApiKey, model) {
     convoluted code structures, excessive code coupling, lack of modularity, poor separation of concerns, architectural 
     inconsistencies, or dependencies that hinder unit testing, or code that is hard to understand and maintain. 
     
-    Offer actionable recommendations to address these issues and improve the overall quality of the code. Please mention
-    line numbers where possible.
+    Offer actionable recommendations to address these issues and improve the overall quality of the code. Please start 
+    your suggestions with file name(s) including line numbers with each suggestion where possible.
     
     Here is code: 
     ${diff}
