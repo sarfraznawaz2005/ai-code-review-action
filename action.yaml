@@ -11,36 +11,36 @@ inputs:
     description: "Gemini Model"
     required: false
     default: "gemini-pro"
-  model:
-    description: "email-host"
+  email-host:
+    description: "Email Host"
     required: false
     default: ""
-  model:
-    description: "email-port"
+  email-port:
+    description: "Email Port"
     required: false
     default: ""
-  model:
-    description: "email-user"
+  email-user:
+    description: "Email User"
     required: false
     default: ""
-  model:
-    description: "email-pass"
+  email-pass:
+    description: "Email Pass"
     required: false
     default: ""
-  model:
-    description: "email-from"
+  email-from:
+    description: "Email From"
     required: false
     default: ""
-  model:
-    description: "email-to"
+  email-to:
+    description: "Email To"
     required: false
     default: ""
-  model:
-    description: "email-bcc"
+  email-bcc:
+    description: "Email BCC"
     required: false
     default: ""
-  model:
-    description: "email-secure"
+  email-secure:
+    description: "Email Secure"
     required: false
     default: ""
 runs:
