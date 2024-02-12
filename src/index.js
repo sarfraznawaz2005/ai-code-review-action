@@ -192,7 +192,7 @@ async function run() {
             console.log(explanation);
         }
 
-        if (body && body !== 'Error or no response!') {
+        if (body && !response.result.toLowerCase().includes('no response')) {
             body = converter.makeHtml(body);
 
             await sendEmail(subject, body, emailConfig);

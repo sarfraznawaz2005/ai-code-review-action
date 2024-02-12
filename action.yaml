@@ -11,6 +11,38 @@ inputs:
     description: "Gemini Model"
     required: false
     default: "gemini-pro"
+  model:
+    description: "email-host"
+    required: false
+    default: ""
+  model:
+    description: "email-port"
+    required: false
+    default: ""
+  model:
+    description: "email-user"
+    required: false
+    default: ""
+  model:
+    description: "email-pass"
+    required: false
+    default: ""
+  model:
+    description: "email-from"
+    required: false
+    default: ""
+  model:
+    description: "email-to"
+    required: false
+    default: ""
+  model:
+    description: "email-bcc"
+    required: false
+    default: ""
+  model:
+    description: "email-secure"
+    required: false
+    default: ""
 runs:
   using: "node20"
   main: "src/index.js"
