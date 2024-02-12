@@ -84,7 +84,7 @@ async function getReview(diff, geminiApiKey, model) {
 
         //console.log(response);
 
-        return response.data.candidates[0].content.parts[0].text || 'Error or no response!';
+        return response?.data?.candidates?.[0]?.content?.parts?.[0]?.text ?? 'Error or no response!';
 
     } catch (error) {
         console.error('Error:', error);
@@ -187,14 +187,14 @@ async function run() {
             const explanation = await getReview(diff, geminiApiKey, model);
 
             subject = `Code Review: Push Event in ${repo.repo.toUpperCase()} By ${userName}`;
-            body = explanation.trim();
+            body = explanation;
 
             console.log(`explanation`);
             console.log(explanation);
         }
 
         if (body && !body.toLowerCase().includes('no response')) {
-            body = converter.makeHtml(body);
+            body = converter.makeHtml(body).trim();
 
             await sendEmail(subject, body, emailConfig);
         }
