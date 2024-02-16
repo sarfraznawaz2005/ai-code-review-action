@@ -174,15 +174,25 @@ async function run() {
             body = explanation;
 
         } else if (github.context.eventName === 'push') {
-            const prNumber = github.context.payload.pull_request.number;
-            const diff = await getPrDiff(prNumber, octokit, repo);
+            const commits = github.context.payload.commits;
+            userName = github.context.payload.pusher.name;
+            userName = userName || github.context.payload.pull_request.user.login;
+
+            if (!commits || commits.length === 0) {
+                console.log('No commits found in push event.');
+                return;
+            }
+
+            const diff = await getPushDiff(commits, octokit, repo);
             const explanation = await getReview(diff, geminiApiKey, model);
-            userName = github.context.payload.pull_request.user.login;
 
-            await commentOnPr(prNumber, explanation, octokit, repo);
+            await commentOnPr('Code Review', explanation, octokit, repo);
 
-            subject = `Code Review: Pull Request #${prNumber} in ${repo.repo.toUpperCase()} By ${userName}`;
+            subject = `Code Review: Push Event in ${repo.repo.toUpperCase()} By ${userName}`;
             body = explanation;
+
+            console.log(`explanation`);
+            console.log(explanation);
         }
 
         if (body && !body.toLowerCase().includes('no response')) {
