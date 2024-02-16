@@ -20,6 +20,49 @@ async function getPrDiff(prNumber, octokit, repo) {
     return diff;
 }
 
+// this gets latest code diffs for each file
+async function getLatestPushDiff(commits, octokit, repo) {
+    let latestCommitsForFiles = {};
+
+    // Step 1: Determine the latest commit for each file
+    for (const commit of commits) {
+        const { data: commitData } = await octokit.rest.repos.getCommit({
+            owner: repo.owner,
+            repo: repo.repo,
+            ref: commit.id,
+        });
+
+        for (const file of commitData.files) {
+            // Update the latest commit for the file
+            latestCommitsForFiles[file.filename] = commit.id;
+        }
+    }
+
+    let diffs = '';
+    let processedCommits = new Set(); // To avoid processing the same commit multiple times
+
+    // Step 2: Fetch and process diffs only for the latest commits of each file
+    for (const [filename, commitId] of Object.entries(latestCommitsForFiles)) {
+        if (!processedCommits.has(commitId)) {
+            const { data: commitData } = await octokit.rest.repos.getCommit({
+                owner: repo.owner,
+                repo: repo.repo,
+                ref: commitId,
+            });
+
+            for (const file of commitData.files) {
+                if (file.filename === filename) {
+                    diffs += `Commit: ${commitId}\nFile: ${file.filename}\n${file.patch}\n`;
+                }
+            }
+
+            processedCommits.add(commitId);
+        }
+    }
+
+    return diffs;
+}
+
 async function getPushDiff(commits, octokit, repo) {
     let diffs = '';
     for (const commit of commits) {
@@ -215,7 +258,7 @@ async function run() {
                 return;
             }
 
-            const diff = await getPushDiff(commits, octokit, repo);
+            const diff = await getLatestPushDiff(commits, octokit, repo);
             const explanation = await getReview(diff, geminiApiKey, model);
 
             //await createCodeReviewIssueForPush(explanation, octokit, repo);
