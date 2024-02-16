@@ -273,7 +273,10 @@ async function run() {
         if (body && !body.toLowerCase().includes('no response')) {
             body = converter.makeHtml(body).trim();
 
-            await sendEmail(subject, body, emailConfig);
+            if (body) {
+                await sendEmail(subject, body, emailConfig);
+            }
+
         }
 
     } catch (error) {
