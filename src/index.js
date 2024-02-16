@@ -243,7 +243,7 @@ async function run() {
             const explanation = await getReview(diff, geminiApiKey, model);
             userName = github.context.payload.pull_request.user.login;
 
-            await commentOnPr(prNumber, explanation, octokit, repo);
+            //await commentOnPr(prNumber, explanation, octokit, repo);
 
             subject = `Code Review: Pull Request #${prNumber} in ${repo.repo.toUpperCase()} By ${userName}`;
             body = explanation;
