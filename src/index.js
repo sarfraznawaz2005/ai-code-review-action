@@ -218,7 +218,7 @@ async function run() {
             const diff = await getPushDiff(commits, octokit, repo);
             const explanation = await getReview(diff, geminiApiKey, model);
 
-            await createCodeReviewIssueForPush(explanation, octokit, repo);
+            //await createCodeReviewIssueForPush(explanation, octokit, repo);
 
             subject = `Code Review: Push Event in ${repo.repo.toUpperCase()} By ${userName}`;
             body = explanation;
