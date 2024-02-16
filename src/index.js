@@ -97,8 +97,40 @@ async function commentOnPr(prNumber, explanation, octokit, repo) {
         repo: repo.repo,
         issue_number: prNumber,
         body: explanation,
+        labels: ['code-review'],
     });
 }
+
+async function createCodeReviewIssueForPush(body, octokit, repo) {
+    // Attempt to fetch the latest issue to use its number for naming. This is not fully reliable for naming conventions.
+    const { data: issues } = await octokit.rest.issues.listForRepo({
+        owner: repo.owner,
+        repo: repo.repo,
+        state: 'all', // Consider both open and closed issues
+        labels: 'code-review', // Filter by a specific label if you use one
+        per_page: 1, // We only need the latest issue
+        direction: 'desc', // Ensure we get the latest
+    });
+
+    let issueNumber = 1; // Default if no issues are found
+    if (issues.length > 0) {
+        // Try to extract an issue number from the latest code review issue title
+        const match = issues[0].title.match(/Code Review Issue #(\d+)/);
+        if (match) {
+            issueNumber = parseInt(match[1], 10) + 1; // Increment the extracted number
+        }
+    }
+
+    // Create the new issue with an incremented title and tag it with "code-review"
+    await octokit.rest.issues.create({
+        owner: repo.owner,
+        repo: repo.repo,
+        title: `Code Review Issue #${issueNumber}`,
+        body: body,
+        labels: ['code-review'], // Tagging the issue with "code-review"
+    });
+}
+
 
 async function sendEmail(subject, body, emailConfig) {
 
@@ -186,7 +218,7 @@ async function run() {
             const diff = await getPushDiff(commits, octokit, repo);
             const explanation = await getReview(diff, geminiApiKey, model);
 
-            await commentOnPr('Code Review', explanation, octokit, repo);
+            await createCodeReviewIssueForPush(explanation, octokit, repo);
 
             subject = `Code Review: Push Event in ${repo.repo.toUpperCase()} By ${userName}`;
             body = explanation;
