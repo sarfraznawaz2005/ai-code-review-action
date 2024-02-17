@@ -258,7 +258,7 @@ async function run() {
                 return;
             }
 
-            const diff = await getLatestPushDiff(commits, octokit, repo);
+            const diff = await getPushDiff(commits, octokit, repo);
             const explanation = await getReview(diff, geminiApiKey, model);
 
             //await createCodeReviewIssueForPush(explanation, octokit, repo);
