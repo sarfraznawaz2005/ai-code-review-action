@@ -79,7 +79,7 @@ async function getPushDiff(commits, octokit, repo) {
 }
 
 async function getReview(diff, geminiApiKey, model) {
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${geminiApiKey}`;
 
     // Always start your suggestions with file name(s) including line numbers with each suggestion.
 
