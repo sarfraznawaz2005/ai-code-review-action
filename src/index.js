@@ -178,6 +178,10 @@ async function createCodeReviewIssueForPush(body, octokit, repo) {
 
 async function sendEmail(subject, body, emailConfig) {
 
+    if (body.length <= 10) {
+        return;
+    }
+
     if (!emailConfig.host || !emailConfig.to) {
         console.log("No email credentials confirued!");
     }
