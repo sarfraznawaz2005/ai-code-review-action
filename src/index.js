@@ -92,10 +92,13 @@ async function getReview(diff, geminiApiKey, model) {
     inconsistencies, or dependencies that hinder unit testing, or code that is hard to understand and maintain. 
     
     Offer actionable recommendations to address these issues and improve the overall quality of the code. Please start 
-    your suggestions with file name(s) including line numbers with each suggestion where possible. Please don't include
-    files containing sensitive information such as passwords in your review.
+    your suggestions with file name(s) including line numbers with each suggestion where possible.
     
-    Here is code: 
+    Rules you must follow for your answer:
+		- Please don't include files containing sensitive information such as passwords in your review.
+		- Instead of showing actual passwords in your review, mask them.
+    
+    Here is code you need to review: 
     ${diff}
     `;
 
