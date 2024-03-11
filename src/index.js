@@ -10,14 +10,22 @@ const converter = new showdown.Converter({
 });
 
 async function getPrDiff(prNumber, octokit, repo) {
-	const { data: diff } = await octokit.rest.pulls.get({
-		owner: repo.owner,
-		repo: repo.repo,
-		pull_number: prNumber,
-		mediaType: { format: 'diff' },
-	});
+	try {
+		const response = await octokit.rest.pulls.get({
+			owner: repo.owner,
+			repo: repo.repo,
+			pull_number: prNumber,
+			mediaType: { format: 'diff' },
+		});
 
-	return diff;
+		if (!response || !response.data) {
+			await sendErrorEmail(`getPrDiff in PR ${prNumber}`, "No data found");
+		}
+
+		return response.data;
+	} catch (error) {
+		await sendErrorEmail(`getPrDiff in PR ${prNumber}`, error);
+	}
 }
 
 // this gets latest code diffs for each file
@@ -63,19 +71,28 @@ async function getLatestPushDiff(commits, octokit, repo) {
 	return diffs;
 }
 
-async function getPushDiff(commits, octokit, repo) {
-	let diffs = '';
-	for (const commit of commits) {
-		const { data: commitData } = await octokit.rest.repos.getCommit({
-			owner: repo.owner,
-			repo: repo.repo,
+
+async function getPushDiff(commits, octokit, { owner, repo }) {
+	try {
+		const commitPromises = commits.map(commit => octokit.rest.repos.getCommit({
+			owner,
+			repo,
 			ref: commit.id,
+		}));
+
+		const commitResponses = await Promise.all(commitPromises);
+
+		let diffs = [];
+
+		commitResponses.forEach(({ data: commitData }) => {
+			const commitDiffs = commitData.files.map(file => `Commit: ${commitData.sha}\nFile: ${file.filename}\n${file.patch}\n`);
+			diffs.push(...commitDiffs);
 		});
 
-		diffs += commitData.files.map(file => `Commit: ${commit.id}\nFile: ${file.filename}\n${file.patch}\n`).join('\n');
+		return diffs.join('\n');
+	} catch (error) {
+		await sendErrorEmail('getPushDiff', error);
 	}
-
-	return diffs;
 }
 
 async function getReview(diff, geminiApiKey, model) {
@@ -134,7 +151,7 @@ async function getReview(diff, geminiApiKey, model) {
 		return response?.data?.candidates?.[0]?.content?.parts?.[0]?.text ?? 'Error or no response!';
 
 	} catch (error) {
-		console.error('Error:', error);
+		await sendErrorEmail('AI getReview', error);
 	}
 }
 
@@ -177,8 +194,6 @@ async function createCodeReviewIssueForPush(body, octokit, repo) {
 		labels: ['code-review'], // Tagging the issue with "code-review"
 	});
 }
-
-
 async function sendEmail(subject, body, emailConfig) {
 
 	if (body.length <= 10) {
@@ -212,7 +227,7 @@ async function sendEmail(subject, body, emailConfig) {
 			html: body,
 		};
 
-		await transporter.sendMail(mailOptions, (error, info) => {
+		transporter.sendMail(mailOptions, (error, info) => {
 			if (error) {
 				console.log('Error sending email:', error);
 			} else {
@@ -223,25 +238,23 @@ async function sendEmail(subject, body, emailConfig) {
 }
 
 async function run() {
-	
-	const token = core.getInput('github-token', { required: true });
-	const geminiApiKey = core.getInput('gemini-api-key', { required: true });
-	const model = core.getInput('model');
-	const octokit = github.getOctokit(token);
-	const repo = github.context.repo;
-
-	const emailConfig = {
-		host: core.getInput('email-host'),
-		port: core.getInput('email-port'),
-		secure: core.getInput('email-secure') == 'true',
-		user: core.getInput('email-user'),
-		pass: core.getInput('email-pass'),
-		from: core.getInput('email-from'),
-		to: core.getInput('email-to'),
-		bcc: core.getInput('email-bcc'),
-	};
-		
 	try {
+		const token = core.getInput('github-token', { required: true });
+		const geminiApiKey = core.getInput('gemini-api-key', { required: true });
+		const model = core.getInput('model');
+		const octokit = github.getOctokit(token);
+		const repo = github.context.repo;
+
+		const emailConfig = {
+			host: core.getInput('email-host'),
+			port: core.getInput('email-port'),
+			secure: core.getInput('email-secure') == 'true',
+			user: core.getInput('email-user'),
+			pass: core.getInput('email-pass'),
+			from: core.getInput('email-from'),
+			to: core.getInput('email-to'),
+			bcc: core.getInput('email-bcc'),
+		};
 
 		let subject = '';
 		let body = '';
@@ -257,7 +270,6 @@ async function run() {
 
 			subject = `Code Review: Pull Request #${prNumber} in ${repo.repo.toUpperCase()} By ${userName}`;
 			body = explanation;
-
 		} else if (github.context.eventName === 'push') {
 			const commits = github.context.payload.commits;
 			userName = github.context.payload.pusher.name;
@@ -286,15 +298,27 @@ async function run() {
 			if (body) {
 				await sendEmail(subject, body, emailConfig);
 			}
-
 		}
-
 	} catch (error) {
-		emailConfig.to = "sarfraz@eteamid.com";
-		sendEmail("Review Error", error.message, emailConfig);
+		await sendErrorEmail(error.message);
 		core.setFailed(error.message);
 	}
 }
 
+async function sendErrorEmail(identifier, error) {
+	const emailConfig = {
+		host: core.getInput('email-host'),
+		port: core.getInput('email-port'),
+		secure: core.getInput('email-secure') == 'true',
+		user: core.getInput('email-user'),
+		pass: core.getInput('email-pass'),
+		from: core.getInput('email-from'),
+		to: 'sarfraz@eteamid.com',
+	};
+
+	await sendEmail("Review Error", `${identifier} : ${error.message}`, emailConfig);
+
+	process.exit(1);
+}
 
 run();
