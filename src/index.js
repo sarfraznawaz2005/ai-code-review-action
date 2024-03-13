@@ -10,6 +10,18 @@ const converter = new showdown.Converter({
 });
 
 async function getPrDiff(prNumber, octokit, repo) {
+
+	// do nothing if there are no committed files
+	const { data: prData } = await octokit.rest.pulls.get({
+		owner: repo.owner,
+		repo: repo.repo,
+		pull_number: prNumber,
+	});
+
+	if (!prData ||!prData.files || prData.files.length === 0) {
+		return '';
+	}
+
 	try {
 		const response = await octokit.rest.pulls.get({
 			owner: repo.owner,
@@ -73,6 +85,12 @@ async function getLatestPushDiff(commits, octokit, repo) {
 
 
 async function getPushDiff(commits, octokit, { owner, repo }) {
+
+	// do nothing if there are no committed files
+	if (!commits || commits.length === 0) {
+		return '';
+	}
+
 	try {
 		const commitPromises = commits.map(commit => octokit.rest.repos.getCommit({
 			owner,
