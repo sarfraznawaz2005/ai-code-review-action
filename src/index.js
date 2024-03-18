@@ -153,7 +153,7 @@ async function getReview(diff, geminiApiKey, model) {
 			],
 			generationConfig: {
 				maxOutputTokens: 4096,
-				//temperature: 1.0,
+				temperature: 0.5,
 				//topP: 0.8,
 				//topK: 10
 			}
