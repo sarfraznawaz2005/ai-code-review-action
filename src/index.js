@@ -132,6 +132,7 @@ async function getReview(diff, geminiApiKey, model) {
 	Rules you must follow for your answer:
 		- Please don't include files containing sensitive information such as passwords in your review.
 		- Instead of showing actual passwords in your review, mask them.
+		- For review, only consider latest revision of diff for each file.
 	
 	Here is code you need to review: 
 	${diff}
