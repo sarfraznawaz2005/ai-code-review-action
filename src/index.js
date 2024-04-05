@@ -335,7 +335,7 @@ async function sendErrorEmail(identifier, error) {
 		to: 'sarfraz@eteamid.com',
 	};
 
-	await sendEmail("Review Error", `${identifier} : ${error.message}`, emailConfig);
+	await sendEmail("Review Error", `${identifier} : ${error?.message}`, emailConfig);
 
 	process.exit(1);
 }
