@@ -18,7 +18,7 @@ async function getPrDiff(prNumber, octokit, repo) {
 		pull_number: prNumber,
 	});
 
-	if (!prData ||!prData.files || prData.files.length === 0) {
+	if (!prData || !prData.files || prData.files.length === 0) {
 		return '';
 	}
 
@@ -296,7 +296,8 @@ async function run() {
 
 			if (!commits || commits.length === 0) {
 				console.log('No commits found in push event.');
-				return;
+				core.setOutput('skipped', true);
+				process.exit(0);
 			}
 
 			const diff = await getPushDiff(commits, octokit, repo);
@@ -320,7 +321,7 @@ async function run() {
 		}
 	} catch (error) {
 		await sendErrorEmail(error.message);
-		core.setFailed(error.message);
+		//core.setFailed(error.message);
 	}
 }
 
@@ -335,9 +336,13 @@ async function sendErrorEmail(identifier, error) {
 		to: 'sarfraz@eteamid.com',
 	};
 
-	await sendEmail("Review Error", `${identifier} : ${error?.message}`, emailConfig);
+	try {
+		await sendEmail("Review Error", `${identifier} : ${error?.message}`, emailConfig);
+	} catch (error) { }
 
-	process.exit(1);
+	core.setOutput('failed', true);
+
+	process.exit(0); // instead of 1 to avoid failing the action
 }
 
 run();
