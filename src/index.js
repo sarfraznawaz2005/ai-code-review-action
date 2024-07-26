@@ -10,34 +10,40 @@ const converter = new showdown.Converter({
 });
 
 async function getPrDiff(prNumber, octokit, repo) {
+    const { data: prData } = await octokit.rest.pulls.get({
+        owner: repo.owner,
+        repo: repo.repo,
+        pull_number: prNumber,
+    });
 
-	// do nothing if there are no committed files
-	const { data: prData } = await octokit.rest.pulls.get({
-		owner: repo.owner,
-		repo: repo.repo,
-		pull_number: prNumber,
-	});
+    if (!prData || !prData.files || prData.files.length === 0) {
+        return '';
+    }
 
-	if (!prData || !prData.files || prData.files.length === 0) {
-		return '';
-	}
+    try {
+        const response = await octokit.rest.pulls.listFiles({
+            owner: repo.owner,
+            repo: repo.repo,
+            pull_number: prNumber,
+        });
 
-	try {
-		const response = await octokit.rest.pulls.get({
-			owner: repo.owner,
-			repo: repo.repo,
-			pull_number: prNumber,
-			mediaType: { format: 'diff' },
-		});
+        if (!response || !response.data) {
+            await sendErrorEmail(`getPrDiff in PR ${prNumber}`, "No data found");
+            return '';
+        }
 
-		if (!response || !response.data) {
-			await sendErrorEmail(`getPrDiff in PR ${prNumber}`, "No data found");
-		}
+        let diffs = '';
+        for (const file of response.data) {
+            if (file.patch) {
+                diffs += `File: ${file.filename}\n${file.patch}\n`;
+            }
+        }
 
-		return response.data;
-	} catch (error) {
-		await sendErrorEmail(`getPrDiff in PR ${prNumber}`, error);
-	}
+        return diffs;
+    } catch (error) {
+        await sendErrorEmail(`getPrDiff in PR ${prNumber}`, error);
+        return '';
+    }
 }
 
 // this gets latest code diffs for each file
@@ -84,33 +90,32 @@ async function getLatestPushDiff(commits, octokit, repo) {
 }
 
 
-async function getPushDiff(commits, octokit, { owner, repo }) {
+async function getPushDiff(commits, octokit, repo) {
+    if (!commits || commits.length === 0) {
+        return '';
+    }
 
-	// do nothing if there are no committed files
-	if (!commits || commits.length === 0) {
-		return '';
-	}
+    try {
+        let diffs = '';
+        for (const commit of commits) {
+            const { data: commitData } = await octokit.rest.repos.getCommit({
+                owner: repo.owner,
+                repo: repo.repo,
+                ref: commit.id,
+            });
 
-	try {
-		const commitPromises = commits.map(commit => octokit.rest.repos.getCommit({
-			owner,
-			repo,
-			ref: commit.id,
-		}));
+            for (const file of commitData.files) {
+                if (file.patch) {
+                    diffs += `Commit: ${commit.id}\nFile: ${file.filename}\n${file.patch}\n`;
+                }
+            }
+        }
 
-		const commitResponses = await Promise.all(commitPromises);
-
-		let diffs = [];
-
-		commitResponses.forEach(({ data: commitData }) => {
-			const commitDiffs = commitData.files.map(file => `Commit: ${commitData.sha}\nFile: ${file.filename}\n${file.patch}\n`);
-			diffs.push(...commitDiffs);
-		});
-
-		return diffs.join('\n');
-	} catch (error) {
-		await sendErrorEmail('getPushDiff', error);
-	}
+        return diffs;
+    } catch (error) {
+        await sendErrorEmail('getPushDiff', error);
+        return '';
+    }
 }
 
 async function getReview(diff, geminiApiKey, model) {
